@@ -10,6 +10,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,12 +25,14 @@ import static java.text.MessageFormat.format;
 @SupportedAnnotationTypes("it.marbola.jdbc.annotation.MapRow")
 public class RowMapperProcessor extends AbstractProcessor {
 
+	private Messager messager = null;
 	private Elements elements = null;
 	private Filer filer = null;
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
+		messager = processingEnv.getMessager();
 		elements = processingEnv.getElementUtils();
 		filer = processingEnv.getFiler();
 	}
@@ -44,7 +47,7 @@ public class RowMapperProcessor extends AbstractProcessor {
 			}
 
 			// Recupero attributi
-			System.out.println("Recupero attributi");
+			messager.printMessage(Diagnostic.Kind.NOTE,"Recupero attributi");
 
 			String className = annotatedInterfaes.getSimpleName().toString();
 			String packageName = elements
@@ -56,7 +59,7 @@ public class RowMapperProcessor extends AbstractProcessor {
 			TypeName returnTypeName = TypeName.get(returnType);
 
 			// Creazione metodo
-			System.out.println("Creazione metodo");
+			messager.printMessage(Diagnostic.Kind.NOTE,"Creazione metodo");
 
 			MethodSpec.Builder builderMethod = MethodSpec.methodBuilder("mapRow")
 					.addModifiers(Modifier.PUBLIC)
@@ -66,7 +69,7 @@ public class RowMapperProcessor extends AbstractProcessor {
 					.addStatement("$T model = new $T()", returnTypeName, returnTypeName);
 
 			// Generazione setter dinamico
-			System.out.println("Generazione setter dinamico");
+			messager.printMessage(Diagnostic.Kind.NOTE,"Generazione setter dinamico");
 
 			Optional<? extends Element> modelEntityOptional = roundEnvironment
 					.getRootElements()
@@ -86,7 +89,7 @@ public class RowMapperProcessor extends AbstractProcessor {
 						continue;
 					}
 
-					System.out.println("Generazione enclosedElement dinamico");
+					messager.printMessage(Diagnostic.Kind.NOTE,"Generazione enclosedElement dinamico");
 
 					TypeName fieldtypeName = TypeName.get(enclosedElement.asType());
 					String[] split = fieldtypeName.toString().split("\\.");
@@ -143,9 +146,6 @@ public class RowMapperProcessor extends AbstractProcessor {
 			try {
 				javaFile.writeTo(filer);
 
-//				filer.createClassFile(packageName + ".impl",
-//					classImplementation.originatingElements.get(0)
-//				);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
