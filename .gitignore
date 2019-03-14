@@ -6,7 +6,8 @@ target/
 *.log
 
 # Intellij
-.iml
+*.iml
+.idea
 
 
 # BlueJ files
