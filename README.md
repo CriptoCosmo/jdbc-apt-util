@@ -19,7 +19,7 @@ Add dependecy in your `pom.xml`
 <dependency>
     <groupId>it.marbola.apt</groupId>
     <artifactId>spring-jdbc</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0-SNAPSHOT</version>
     <scope>compile</scope>
 </dependency>
 ```
@@ -42,7 +42,7 @@ Add plugin in your `pom.xml`
                     <configuration>
                         <outputDirectory>src/main/java</outputDirectory>
                         <processor>
-                            it.marbola.jdbc.annotation.RowMapperProcessor
+                            it.marbola.jdbc.annotation.AnnotationProcessor
                         </processor>
                     </configuration>
                 </execution>
@@ -72,10 +72,12 @@ package com.example.demo.model;
 import lombok.Data;
 
 @Data //Setter and getter is required
+@JDBCMap
 public class CustomEntity {
 
 	private Float id ;
-	private String name ;
+	@Field(name="username")
+    private String name ;
 	private String lastName ;
 	private Integer size ;
 	private Object obj ;
@@ -83,15 +85,6 @@ public class CustomEntity {
 }
 
 ```
-
-Now defining the interface as follow
-
-```java
-@MapRow //Here is magic
-public interface CustomRowMapper extends RowMapper<CustomEntity> {}
-```
-
-
 
 # Generated
 
@@ -106,19 +99,16 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 
 public class CustomRowMapperImpl implements RowMapper<CustomEntity> {
-  public CustomEntity mapRow(ResultSet resultSet, int row) {
+  public CustomEntity mapRow(ResultSet resultSet, int row) throws SQLException {
     CustomEntity model = new CustomEntity();
-    try {
-      model.setId(resultSet.getFloat("ID"));
-      model.setName(resultSet.getString("NAME"));
-      model.setLastName(resultSet.getString("LASTNAME"));
-      model.setSize(resultSet.getInt("SIZE"));
-      model.setObj(resultSet.getObject("OBJ"));
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+    model.setId(resultSet.getFloat("ID"));
+    model.setName(resultSet.getString("username"));
+    model.setLastName(resultSet.getString("LAST_NAME"));
+    model.setSize(resultSet.getInt("SIZE"));
+    model.setObj(resultSet.getObject("OBJ"));
     return model;
   }
 }
 
 ```
+
